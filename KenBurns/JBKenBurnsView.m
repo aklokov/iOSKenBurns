@@ -29,34 +29,53 @@
 #define imageBufer 3
 
 // Private interface
-@interface JBKenBurnsView ()
+@interface JBKenBurnsView (){
+    NSMutableArray *_imagesArray;
+    float _timeTransition;
+    BOOL _isLoop;
+    BOOL _isLandscape;
+}
 
 @property (nonatomic) int currentImage;
-@property (nonatomic) BOOL animationInCurse;
 
 @end
 
 
 @implementation JBKenBurnsView
 
--(id)init
+- (id)init
 {
     self = [super init];
     if (self) {
-        self.layer.masksToBounds = YES;
+        [self setup];
     }
     return self;
 }
 
-- (void) animateWithImages:(NSMutableArray *)images transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)inLandscape;
-{
-    self.imagesArray      = images;
-    self.timeTransition   = duration;
-    self.isLoop           = shouldLoop;
-    self.isLandscape      = inLandscape;
-    self.animationInCurse = NO;
-    
+- (void)awakeFromNib {
+    [self setup];
+}
+
+- (void)setup {
     self.layer.masksToBounds = YES;
+}
+
+- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape {
+    _imagesArray      = [imagePaths mutableCopy];
+    _timeTransition   = time;
+    _isLoop           = isLoop;
+    _isLandscape      = isLandscape;
+
+//    [NSThread detachNewThreadSelector:@selector(_startAnimations:) toTarget:self withObject:images];
+}
+
+
+- (void) animateWithImages:(NSArray *)images transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)inLandscape;
+{
+    _imagesArray      = [images mutableCopy];
+    _timeTransition   = duration;
+    _isLoop           = shouldLoop;
+    _isLandscape      = inLandscape;
     
     [NSThread detachNewThreadSelector:@selector(_startAnimations:) toTarget:self withObject:images];
 }
@@ -67,7 +86,6 @@
     _timeTransition   = duration;
     _isLoop           = shouldLoop;
     _isLandscape      = inLandscape;
-    _animationInCurse = NO;
     
     int bufferSize = (imageBufer < urls.count) ? imageBufer : urls.count;
     
@@ -77,7 +95,6 @@
         [_imagesArray addObject:[self _downloadImageFrom:url]];
     }
     
-    self.layer.masksToBounds = YES;
     
     [NSThread detachNewThreadSelector:@selector(_startInternetAnimations:) toTarget:self withObject:urls];
     
@@ -113,16 +130,16 @@
         BOOL wrapping = NO;
         int bufferIndex = 0;
         
-        for (int urlIndex=self.imagesArray.count; urlIndex < [urls count]; urlIndex++) {
+        for (int urlIndex = _imagesArray.count; urlIndex < [urls count]; urlIndex++) {
             
             [self performSelectorOnMainThread:@selector(_animate:)
                                    withObject:[NSNumber numberWithInt:0]
                                 waitUntilDone:YES];            
             
-            [self.imagesArray removeObjectAtIndex:0];
-            [self.imagesArray addObject:[self _downloadImageFrom:[urls objectAtIndex: urlIndex]]];
+            [_imagesArray removeObjectAtIndex:0];
+            [_imagesArray addObject:[self _downloadImageFrom:[urls objectAtIndex: urlIndex]]];
             
-            if ( bufferIndex == self.imagesArray.count -1)
+            if ( bufferIndex == _imagesArray.count -1)
             {
                 NSLog(@"Wrapping!!");
                 wrapping = YES;
@@ -132,7 +149,7 @@
             bufferIndex++;
             urlIndex = (urlIndex == [urls count]-1) && _isLoop ? -1 : urlIndex;
             
-            sleep(self.timeTransition);
+            sleep(_timeTransition);
         }
     }
 }
@@ -296,7 +313,7 @@
     imageView.transform = transform;
     [UIView commitAnimations];
     
-    [self performSelector:@selector(_notifyDelegate:) withObject:num afterDelay:self.timeTransition];
+    [self performSelector:@selector(_notifyDelegate:) withObject:num afterDelay:_timeTransition];
 }
 
 - (void) _notifyDelegate: (NSNumber *)imageIndex
