@@ -98,7 +98,6 @@ enum JBSourceMode {
     [_nextImageTimer fire];
 }
 
-
 - (void)nextImage {
     _currentIndex++;
 

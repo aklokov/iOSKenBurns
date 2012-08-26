@@ -55,7 +55,7 @@
                          [UIImage imageNamed:@"image5.png"], nil];
     
     [self.kenView animateWithImages:myImages 
-                 transitionDuration:1
+                 transitionDuration:8
                                loop:YES 
                         isLandscape:YES];
     
