@@ -33,22 +33,17 @@
 @optional
 - (void)didShowImageAtIndex:(NSUInteger)index;
 - (void)didFinishAllAnimations;
-
 @end
 
-@interface JBKenBurnsView : UIView {
-    NSMutableArray *imagesArray;
-    float timeTransition;
-    BOOL isLoop;
-    BOOL isLandscape;
-    __weak id <JBKenBurnsViewDelegate> delegate;
-}
+
+
+@interface JBKenBurnsView : UIView
 
 @property (nonatomic, assign) float timeTransition;
 @property (nonatomic, retain) NSMutableArray *imagesArray;
 @property (nonatomic) BOOL isLoop;
 @property (nonatomic) BOOL isLandscape;
-@property (weak) id<JBKenBurnsViewDelegate> delegate;
+@property (unsafe_unretained) id<JBKenBurnsViewDelegate> delegate;
 
 - (void) animateWithImages:(NSArray *)images transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 - (void) animateWithURLs:(NSArray *)urls transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)inLandscape;
